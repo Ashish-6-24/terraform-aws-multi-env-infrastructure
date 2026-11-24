@@ -28,10 +28,9 @@ jobs:
                     - prod
 
         env:
-            AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-            AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
             AWS_REGION: ap-south-1
             AWS_DEFAULT_REGION: ap-south-1
+            TF_WORKSPACE: ${{ matrix.workspace }}
 
         steps:
             # Download repository files.
@@ -53,12 +52,6 @@ jobs:
             # Validate Terraform configuration.
             - name: Terraform Validate
               run: terraform validate -no-color
-
-            # Select or create the workspace for this test run.
-            - name: Select Terraform Workspace
-              run: |
-                  terraform workspace select "${{ matrix.workspace }}" || \
-                  terraform workspace new "${{ matrix.workspace }}"
 
             # Execute Terraform infrastructure tests.
             - name: Terraform Test
