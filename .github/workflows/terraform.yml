@@ -1,66 +1,65 @@
-
 name: Terraform CI
 
 on:
-  push:
-    branches:
-      - main
+    push:
+        branches:
+            - main
 
-  pull_request:
-    branches:
-      - main
+    pull_request:
+        branches:
+            - main
 
-  workflow_dispatch:
+    workflow_dispatch:
 
 permissions:
-  contents: read
+    contents: read
 
 jobs:
-  terraform:
-    name: Terraform - ${{ matrix.workspace }}
-    runs-on: ubuntu-latest
+    terraform:
+        name: Terraform - ${{ matrix.workspace }}
+        runs-on: ubuntu-latest
 
-    strategy:
-      fail-fast: false
-      matrix:
-        workspace:
-          - dev
-          - stg
-          - prod
+        strategy:
+            fail-fast: false
+            matrix:
+                workspace:
+                    - dev
+                    - stg
+                    - prod
 
-    env:
-      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      AWS_REGION: ap-southeast-2
-      AWS_DEFAULT_REGION: ap-southeast-2
+        env:
+            AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+            AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+            AWS_REGION: ap-south-1
+            AWS_DEFAULT_REGION: ap-south-1
 
-    steps:
-      # Download repository files.
-      - name: Checkout Repository
-        uses: actions/checkout@v7
+        steps:
+            # Download repository files.
+            - name: Checkout Repository
+              uses: actions/checkout@v7
 
-      # Install Terraform CLI.
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v4
+            # Install Terraform CLI.
+            - name: Setup Terraform
+              uses: hashicorp/setup-terraform@v4
 
-      # Check Terraform formatting.
-      - name: Terraform Format
-        run: terraform fmt -check -recursive
+            # Check Terraform formatting.
+            - name: Terraform Format
+              run: terraform fmt -check -recursive
 
-      # Initialize Terraform without connecting to the remote backend.
-      - name: Terraform Init
-        run: terraform init -backend=false -input=false -lockfile=readonly
+            # Initialize Terraform without connecting to the remote backend.
+            - name: Terraform Init
+              run: terraform init -backend=false -input=false -lockfile=readonly
 
-      # Validate Terraform configuration.
-      - name: Terraform Validate
-        run: terraform validate -no-color
+            # Validate Terraform configuration.
+            - name: Terraform Validate
+              run: terraform validate -no-color
 
-      # Select or create the workspace for this test run.
-      - name: Select Terraform Workspace
-        run: |
-          terraform workspace select "${{ matrix.workspace }}" || \
-          terraform workspace new "${{ matrix.workspace }}"
+            # Select or create the workspace for this test run.
+            - name: Select Terraform Workspace
+              run: |
+                  terraform workspace select "${{ matrix.workspace }}" || \
+                  terraform workspace new "${{ matrix.workspace }}"
 
-      # Execute Terraform infrastructure tests.
-      - name: Terraform Test
-        run: terraform test
+            # Execute Terraform infrastructure tests.
+            - name: Terraform Test
+              run: terraform test

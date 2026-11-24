@@ -2,9 +2,9 @@
 # Verify infrastructure sizing for dev, stg, and prod workspaces.
 
 mock_provider "aws" {
-  mock_data "aws_ssm_parameter" {
+  mock_data "aws_ami" {
     defaults = {
-      value = "ami-mock"
+      id = "ami-mock"
     }
   }
 }
