@@ -9,14 +9,16 @@ The project uses Terraform workspaces to select an environment, reusable modules
 ## Project Overview
 
 | Environment | EC2 instances | Application S3 buckets | DynamoDB tables |
-|:--|--:|--:|--:|
-| `dev` | 1 | 1 | 1 |
-| `stg` | 2 | 2 | 2 |
-| `prod` | 4 | 3 | 2 |
+| :---------- | ------------: | ---------------------: | --------------: |
+| `dev`       |             1 |                      1 |               1 |
+| `stg`       |             2 |                      2 |               2 |
+| `prod`      |             4 |                      3 |               2 |
 
 The resource counts are selected from the active Terraform workspace. The remote-state S3 bucket is separate and is not included in the application bucket totals.
 
 ## Architecture
+
+![Terraform AWS Multi-Environment Infrastructure Architecture](docs/screenshots/architecture.png)
 
 The project follows this workflow:
 
@@ -26,7 +28,7 @@ The project follows this workflow:
 4. Reusable modules manage EC2 instances, application S3 buckets, and DynamoDB tables.
 5. Terraform state is stored in an S3 backend, with native S3 state locking enabled.
 
-The architecture diagram and implementation screenshots are stored in the `evidence/` directory.
+The architecture diagram and implementation screenshots are stored in `docs/screenshots/`.
 
 ## Repository Structure
 
@@ -53,15 +55,16 @@ The architecture diagram and implementation screenshots are stored in the `evide
 │       └── outputs.tf
 │
 ├── tests/
-│   └── infrastructure.tftest.hcl
+│   ├── infrastructure.tftest.hcl
+│   └── test_public_key.pub
 │
-├── evidence/
-│   ├── README.md
-│   ├── architecture/
-│   ├── terraform/
-│   ├── github-actions/
-│   ├── remote-state/
-│   └── aws-infrastructure/
+├── docs/
+│   └── screenshots/
+│       ├── architecture.png
+│       ├── 01-terraform-init.png
+│       ├── 02-stg-test.png
+│       ├── 03-dev-test.png
+│       └── 04-prod-test.png
 │
 ├── main.tf
 ├── variables.tf
@@ -71,27 +74,27 @@ The architecture diagram and implementation screenshots are stored in the `evide
 ├── providers.tf
 ├── terraform.tf
 ├── backend.tf
-├── terraform.tfvars.example
 ├── .gitignore
+├── README.md
 └── .terraform.lock.hcl
 ```
 
 ## Configuration Guide
 
-| File or directory | Responsibility |
-|:--|:--|
-| `main.tf` | Connects the reusable modules to the root configuration. |
-| `locals.tf` | Defines resource counts for each environment and selects the active configuration. |
-| `variables.tf` | Declares configurable input values. |
-| `data.tf` | Retrieves existing AWS information, such as an AMI, when permitted. |
-| `providers.tf` | Configures the AWS provider and target region. |
-| `terraform.tf` | Defines Terraform and provider requirements. |
-| `backend.tf` | Configures remote state storage and native locking. |
-| `outputs.tf` | Exposes useful infrastructure information. |
-| `modules/` | Holds the EC2, S3, and DynamoDB module implementations. |
-| `tests/` | Contains Terraform configuration tests. |
-| `.github/workflows/` | Contains the automated validation workflow. |
-| `evidence/` | Holds project screenshots and verification material. |
+| File or directory    | Responsibility                                                                     |
+| :------------------- | :--------------------------------------------------------------------------------- |
+| `main.tf`            | Connects the reusable modules to the root configuration.                           |
+| `locals.tf`          | Defines resource counts for each environment and selects the active configuration. |
+| `variables.tf`       | Declares configurable input values.                                                |
+| `data.tf`            | Retrieves existing AWS information, such as an AMI, when permitted.                |
+| `providers.tf`       | Configures the AWS provider and target region.                                     |
+| `terraform.tf`       | Defines Terraform and provider requirements.                                       |
+| `backend.tf`         | Configures remote state storage and native locking.                                |
+| `outputs.tf`         | Exposes useful infrastructure information.                                         |
+| `modules/`           | Holds the EC2, S3, and DynamoDB module implementations.                            |
+| `tests/`             | Contains Terraform configuration tests.                                            |
+| `.github/workflows/` | Contains the automated validation workflow.                                        |
+| `docs/screenshots/`  | Holds the architecture diagram and implementation screenshots.                     |
 
 ## Technology Stack
 
@@ -175,11 +178,11 @@ terraform {
 
 The workspace state objects follow this pattern:
 
-| Workspace | S3 object key |
-|:--|:--|
-| `dev` | `env/dev/terraform.tfstate` |
-| `stg` | `env/stg/terraform.tfstate` |
-| `prod` | `env/prod/terraform.tfstate` |
+| Workspace | S3 object key                |
+| :-------- | :--------------------------- |
+| `dev`     | `env/dev/terraform.tfstate`  |
+| `stg`     | `env/stg/terraform.tfstate`  |
+| `prod`    | `env/prod/terraform.tfstate` |
 
 The backend bucket is dedicated to Terraform state and is not part of the application S3 module.
 
@@ -320,10 +323,10 @@ terraform workspace show
 
 The EC2 module exposes these outputs:
 
-| Output | Description |
-|:--|:--|
-| `instance_ids` | IDs of the created EC2 instances. |
-| `public_ips` | Public IP addresses of the created instances. |
+| Output         | Description                                   |
+| :------------- | :-------------------------------------------- |
+| `instance_ids` | IDs of the created EC2 instances.             |
+| `public_ips`   | Public IP addresses of the created instances. |
 
 The root-level outputs depend on the declarations in `outputs.tf` and the outputs exposed by each module.
 
@@ -331,7 +334,7 @@ You can also verify resources through the AWS Console or AWS CLI.
 
 ## Evidence
 
-The `evidence/` directory is used to document the implementation and demonstrate the results.
+The `docs/screenshots/` directory documents the implementation and demonstrates the results.
 
 Recommended screenshots include:
 
@@ -400,4 +403,3 @@ Potential enhancements for later iterations:
 **Ashish Subedi**
 
 - GitHub: [Ashish-6-24](https://github.com/Ashish-6-24)
-
